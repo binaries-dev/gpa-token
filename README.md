@@ -1,2 +1,2 @@
 # gpa-token
-Solidity for token mint and airdrop.
+Solidity for token mint and airdrop
