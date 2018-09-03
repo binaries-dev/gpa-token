@@ -12,7 +12,8 @@ contract GPAToken is StandardBurnableToken, MintableToken {
 
   string public name = "Game Platform Accelerator Token";
   string public symbol = "GPA";
-  uint public decimals = 18;
+  uint8 public decimals = 18;
+  uint256 constant MAX_CAP = 10000000000;
 
   bool public pubTrade = false;
 
@@ -93,6 +94,19 @@ contract GPAToken is StandardBurnableToken, MintableToken {
     pubTrade = false;
     emit StopPublicTrade();
   }
+
+  /**
+     * @dev Function to mint tokens
+     * @param _to The address that will receive the minted tokens.
+     * @param _amount The amount of tokens to mint.
+     * @return A boolean that indicates if the operation was successful.
+     */
+     function mint(address _to, uint256 _amount) public onlyOwner onlyPayloadSize(2 * 32) returns (bool) {
+       require(totalSupply().add(_amount) <= MAX_CAP.mul(10 ** uint256(decimals)));
+
+       emit Mint(_to, _amount);
+       return super.mint(_to, _amount);
+     }
 
   /**
   * @dev Transfer token for a specified address
