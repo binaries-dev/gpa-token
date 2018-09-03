@@ -8,7 +8,7 @@ import "openzeppelin-solidity/contracts/token/ERC20/MintableToken.sol";
  * @title GPA Token
  * @dev The main GPA token contract
  */
-contract GPAToken is Ownable, StandardBurnableToken, MintableToken {
+contract GPAToken is StandardBurnableToken, MintableToken {
 
   string public name = "Game Platform Accelerator Token";
   string public symbol = "GPA";
@@ -19,6 +19,11 @@ contract GPAToken is Ownable, StandardBurnableToken, MintableToken {
   mapping(address => bool) private freezeList;
   address[] private indexFreezeList;
 
+  event AddFreezeUser(address indexed addr);
+  event RemoveFreezeUser(address indexed addr);
+  event StartPublicTrade();
+  event StopPublicTrade();
+
   /**
    * @dev modifier that throws if trading has not started yet
    */
@@ -28,25 +33,16 @@ contract GPAToken is Ownable, StandardBurnableToken, MintableToken {
     _;
   }
 
+  /*
+ * @dev Fix for the ERC20 short address attack
+ */
+ modifier onlyPayloadSize(uint size) {
+   assert(msg.data.length >= size + 4);
+   _;
+ }
+
   function _isFreezeList() internal view returns (bool) {
       return (freezeList[msg.sender] ? freezeList[msg.sender] : false);
-  }
-
-  /**
-   * @dev Adding as a freeze member.
-   */
-  function addFreeze(address _addr) public onlyOwner {
-      if(!freezeList[_addr]) {
-        indexFreezeList.push(_addr);
-      }
-      freezeList[_addr] = true;
-  }
-
-  /**
-   * @dev Removing from freeze member.
-   */
-  function removeFreeze(address _addr) public onlyOwner {
-      freezeList[_addr] = false;
   }
 
   /**
@@ -64,10 +60,30 @@ contract GPAToken is Ownable, StandardBurnableToken, MintableToken {
   }
 
   /**
+   * @dev Adding as a freeze member.
+   */
+  function addFreeze(address _addr) public onlyOwner {
+      if(!freezeList[_addr]) {
+        indexFreezeList.push(_addr);
+      }
+      freezeList[_addr] = true;
+      emit AddFreezeUser(_addr);
+  }
+
+  /**
+   * @dev Removing from freeze member.
+   */
+  function removeFreeze(address _addr) public onlyOwner {
+      freezeList[_addr] = false;
+      emit RemoveFreezeUser(_addr);
+  }
+
+  /**
    * @dev Allows the owner to enable the public trading.
    */
   function startPubTrade() public onlyOwner {
     pubTrade = true;
+    emit StartPublicTrade();
   }
 
   /**
@@ -75,6 +91,7 @@ contract GPAToken is Ownable, StandardBurnableToken, MintableToken {
    */
   function stopPubTrade() public onlyOwner {
     pubTrade = false;
+    emit StopPublicTrade();
   }
 
   /**
@@ -82,7 +99,8 @@ contract GPAToken is Ownable, StandardBurnableToken, MintableToken {
   * @param _to The address to transfer to.
   * @param _value The amount to be transferred.
   */
-  function transfer(address _to, uint256 _value) public allowedTrade returns (bool) {
+  function transfer(address _to, uint256 _value) public allowedTrade onlyPayloadSize(2 * 32) returns (bool) {
+    emit Transfer(msg.sender, _to, _value);
     return super.transfer(_to, _value);
   }
 
@@ -92,7 +110,8 @@ contract GPAToken is Ownable, StandardBurnableToken, MintableToken {
    * @param _to address The address which you want to transfer to
    * @param _value uint256 the amount of tokens to be transferred
    */
-  function transferFrom(address _from, address _to, uint256 _value) public allowedTrade returns (bool) {
+  function transferFrom(address _from, address _to, uint256 _value) public allowedTrade onlyPayloadSize(2 * 32) returns (bool) {
+    emit Transfer(_from, _to, _value);
     return super.transferFrom(_from, _to, _value);
   }
 

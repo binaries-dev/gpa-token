@@ -10,39 +10,52 @@ contract GPAAirDrop is Ownable {
   using SafeMath for uint256;
 
   uint8 public decimals;
-  ERC20Interface private targetToken;
+
+  event AirdropTransferCompleted();
+  event ChangeDecimals(uint8 _decimals);
+  event Fallback(address indexed _from, uint256 _value);
 
   constructor() public {
     decimals = 18;
   }
 
-  function execAirDrop(address _tokenAddr, address[] addrList, uint256[] valList) public onlyOwner returns (uint256) {
-    targetToken = ERC20Interface(_tokenAddr);
+  function () public payable {
+    emit Fallback(msg.sender, msg.value);
+    revert();
+  }
 
-    uint256 i = 0;
-    uint256 allowanceValue = _allowanceRemain(targetToken);
-
-    while (i < addrList.length) {
-      require(allowanceValue >= valList[i]);
-
-      targetToken.transferFrom(msg.sender, addrList[i], valList[i].mul(10 ** uint256(decimals)));
-
-      allowanceValue.sub(valList[i]);
-      i++;
-    }
-    return i;
+  /*
+  * @dev Fix for the ERC20 short address attack
+  */
+  modifier onlyPayloadSize(uint size) {
+   assert(msg.data.length >= size + 4);
+   _;
   }
 
   function setDecimals(uint8 _decimals) public onlyOwner {
     decimals = _decimals;
+    emit ChangeDecimals(decimals);
   }
 
   function _allowanceRemain(ERC20Interface _targetToken) internal view returns (uint256) {
     return _targetToken.allowance(owner, this).div(10 ** uint256(decimals)) ;
   }
 
-  function () public payable {
-    revert();
+  function execAirDrop(address _tokenAddr, address[] addrList, uint256[] valList) public onlyOwner onlyPayloadSize(2 * 32) returns (uint256) {
+    uint256 i = 0;
+    uint256 allowanceValue = _allowanceRemain(ERC20Interface(_tokenAddr));
+
+    while (i < addrList.length) {
+      require(allowanceValue >= valList[i]);
+
+      require(ERC20Interface(_tokenAddr).transferFrom(msg.sender, addrList[i], valList[i].mul(10 ** uint256(decimals))));
+
+      allowanceValue.sub(valList[i]);
+      i++;
+    }
+
+    emit AirdropTransferCompleted();
+    return i;
   }
 
 }
