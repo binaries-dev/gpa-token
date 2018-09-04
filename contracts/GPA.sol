@@ -11,7 +11,7 @@ import "openzeppelin-solidity/contracts/token/ERC20/MintableToken.sol";
 contract GPAToken is StandardBurnableToken, MintableToken {
 
   string public name = "Game Platform Accelerator Token";
-  string public symbol = "GPA10";
+  string public symbol = "GPA";
   uint8 public decimals = 18;
   uint256 constant MAX_CAP = 10000000000;
 
