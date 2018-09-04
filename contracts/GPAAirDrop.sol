@@ -11,7 +11,7 @@ contract GPAAirDrop is Ownable {
 
   uint8 public decimals;
 
-  event AirdropTransferCompleted();
+  event AirdropTransferCompleted(uint256 count);
   event ChangeDecimals(uint8 _decimals);
   event Fallback(address indexed _from, uint256 _value);
 
@@ -21,7 +21,7 @@ contract GPAAirDrop is Ownable {
 
   function () public payable {
     emit Fallback(msg.sender, msg.value);
-    revert();
+    //revert();
   }
 
   /*
@@ -54,7 +54,7 @@ contract GPAAirDrop is Ownable {
       i++;
     }
 
-    emit AirdropTransferCompleted();
+    emit AirdropTransferCompleted(i);
     return i;
   }
 

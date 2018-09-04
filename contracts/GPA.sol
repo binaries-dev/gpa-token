@@ -22,8 +22,7 @@ contract GPAToken is StandardBurnableToken, MintableToken {
 
   event AddFreezeUser(address indexed addr);
   event RemoveFreezeUser(address indexed addr);
-  event StartPublicTrade();
-  event StopPublicTrade();
+  event PublicTrade(bool pubTrade);
 
   /**
    * @dev modifier that throws if trading has not started yet
@@ -84,7 +83,7 @@ contract GPAToken is StandardBurnableToken, MintableToken {
    */
   function startPubTrade() public onlyOwner {
     pubTrade = true;
-    emit StartPublicTrade();
+    emit PublicTrade(pubTrade);
   }
 
   /**
@@ -92,7 +91,7 @@ contract GPAToken is StandardBurnableToken, MintableToken {
    */
   function stopPubTrade() public onlyOwner {
     pubTrade = false;
-    emit StopPublicTrade();
+    emit PublicTrade(pubTrade);
   }
 
   /**
