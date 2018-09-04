@@ -11,7 +11,7 @@ import "openzeppelin-solidity/contracts/token/ERC20/MintableToken.sol";
 contract GPAToken is StandardBurnableToken, MintableToken {
 
   string public name = "Game Platform Accelerator Token";
-  string public symbol = "GPA";
+  string public symbol = "GPA10";
   uint8 public decimals = 18;
   uint256 constant MAX_CAP = 10000000000;
 
@@ -104,7 +104,7 @@ contract GPAToken is StandardBurnableToken, MintableToken {
      function mint(address _to, uint256 _amount) public onlyOwner onlyPayloadSize(2 * 32) returns (bool) {
        require(totalSupply().add(_amount) <= MAX_CAP.mul(10 ** uint256(decimals)));
 
-       emit Mint(_to, _amount);
+       //emit Mint(_to, _amount);   // duplication event
        return super.mint(_to, _amount);
      }
 
@@ -114,7 +114,7 @@ contract GPAToken is StandardBurnableToken, MintableToken {
   * @param _value The amount to be transferred.
   */
   function transfer(address _to, uint256 _value) public allowedTrade onlyPayloadSize(2 * 32) returns (bool) {
-    emit Transfer(msg.sender, _to, _value);
+    //emit Transfer(msg.sender, _to, _value);   // duplication event
     return super.transfer(_to, _value);
   }
 
@@ -125,7 +125,7 @@ contract GPAToken is StandardBurnableToken, MintableToken {
    * @param _value uint256 the amount of tokens to be transferred
    */
   function transferFrom(address _from, address _to, uint256 _value) public allowedTrade onlyPayloadSize(2 * 32) returns (bool) {
-    emit Transfer(_from, _to, _value);
+    //emit Transfer(_from, _to, _value);   // duplication event
     return super.transferFrom(_from, _to, _value);
   }
 
